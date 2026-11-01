@@ -2405,3 +2405,311 @@ input, textarea, select {
   border: 1px solid #fecaca;
 }
 
+/* ==========================================================================
+   ESTILOS: ETIQUETADO DE COAUTORES Y DIRECTORIO DEL COMITÉ PERIODÍSTICO
+   ========================================================================== */
+
+.nav-btn-link {
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: var(--text-dark);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.nav-btn-link:hover {
+  background: var(--sky-100);
+  color: var(--sky-800);
+}
+
+.coauthors-selector-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.coauthor-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.coauthor-checkbox-item:hover {
+  border-color: var(--sky-400);
+  background: var(--sky-50);
+}
+
+.coauthor-checkbox-item.selected {
+  border-color: var(--sky-500);
+  background: #e0f2fe;
+}
+
+.coauthor-checkbox-item input[type="checkbox"] {
+  accent-color: var(--sky-600);
+  cursor: pointer;
+}
+
+.coauthor-mini-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.coauthor-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.coauthor-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coauthor-role {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coauthors-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.coauthor-badge-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--sky-50);
+  border: 1px solid var(--sky-200);
+  color: var(--sky-800);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.coauthor-badge-link:hover {
+  background: var(--sky-200);
+  color: var(--sky-900);
+  transform: translateY(-1px);
+}
+
+/* Modal Directorio del Comité */
+.committee-modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  max-width: 960px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  border: 1.5px solid var(--sky-200);
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.committee-modal-header {
+  background: linear-gradient(135deg, var(--sky-800) 0%, var(--green-800) 100%);
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+}
+
+.committee-modal-close {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.committee-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.committee-modal-filter-bar {
+  padding: 1rem 1.75rem;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.committee-search-input-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.committee-search-input-wrap svg {
+  position: absolute;
+  left: 0.85rem;
+  color: var(--text-muted);
+}
+
+.committee-search-input-wrap input {
+  width: 100%;
+  padding: 0.6rem 0.85rem 0.6rem 2.4rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.committee-search-input-wrap input:focus {
+  border-color: var(--sky-500);
+}
+
+.committee-modal-body {
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.committee-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 1.25rem;
+}
+
+.committee-member-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.committee-member-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--sky-300);
+}
+
+.committee-card-banner {
+  height: 85px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.committee-card-avatar-wrap {
+  padding: 0 1rem;
+  margin-top: -30px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.committee-card-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--bg-card);
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background: #ffffff;
+}
+
+.committee-card-content {
+  padding: 0.75rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.committee-card-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 0 0 0.15rem 0;
+}
+
+.committee-card-role {
+  font-size: 0.82rem;
+  color: var(--green-700);
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.committee-card-grade {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.65rem;
+}
+
+.committee-card-bio {
+  font-size: 0.82rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.committee-card-actions {
+  margin-top: auto;
+}
+

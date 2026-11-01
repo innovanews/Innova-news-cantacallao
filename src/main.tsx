@@ -1,5 +1,12 @@
-import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
 import './index.css';
+import '../app.js';
 
-createRoot(document.getElementById('root')!).render(<App />);
+// Safe mount for React components if #root exists in the DOM
+const rootEl = document.getElementById('root');
+if (rootEl) {
+  import('react-dom/client').then(({ createRoot }) => {
+    import('./App.tsx').then(({ default: App }) => {
+      createRoot(rootEl).render(<App />);
+    });
+  });
+}

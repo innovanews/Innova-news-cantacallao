@@ -80,6 +80,7 @@
             </a>
           </li>
           <li><a href="#sobre-nosotros" class="nav-link" data-nav="sobre-nosotros">Sobre Nosotros</a></li>
+          <li><button type="button" class="nav-link nav-btn-link" id="btn-open-committee" title="Ver Directorio del Comité Periodístico">👥 Ver Comité</button></li>
         </ul>
 
         <div class="nav-actions">
@@ -717,6 +718,27 @@
                 </div>
               </div>
 
+              <!-- SELECTOR DE COAUTORES Y COLABORADORES CONECTADO A FIRESTORE USERS (ESTADO ADMITIDO) -->
+              <div class="form-group" style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <label class="form-label" style="margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem; color: var(--sky-900); font-weight: 700;">
+                    <span>👥</span> Etiquetar Coautores / Colaboradores del Comité
+                  </label>
+                  <span style="font-size: 0.75rem; color: var(--green-700); font-weight: 700; background: var(--green-50); padding: 0.2rem 0.55rem; border-radius: var(--radius-full); border: 1px solid var(--green-200);">
+                    ✓ Miembros ADMITIDOS en tiempo real
+                  </span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 0.65rem 0;">
+                  Marca los compañeros del comité que colaboraron en esta investigación o producción. Sus nombres aparecerán en la publicación con enlaces interactivos directos a sus perfiles públicos.
+                </p>
+                <div id="pub-coauthors-container" class="coauthors-selector-box">
+                  <!-- Rellenado dinámico con lista de usuarios admitidos de Firestore -->
+                  <div style="grid-column: 1 / -1; font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem;">
+                    Cargando miembros admitidos...
+                  </div>
+                </div>
+              </div>
+
               <div class="form-group">
                 <label class="form-label" for="pub-excerpt">Resumen Breve (Para tarjeta de portada) <span class="required">*</span></label>
                 <textarea id="pub-excerpt" class="form-textarea" rows="2" placeholder="Resumen informativo de 2 líneas sobre el artículo o reportaje..." required></textarea>
@@ -1013,10 +1035,45 @@
       </div>
     </div>
 
+    <!-- 5. MODAL DIRECTORIO DEL COMITÉ PERIODÍSTICO ("VER COMITÉ") -->
+    <div class="modal-backdrop" id="committee-modal">
+      <div class="committee-modal-card">
+        <div class="committee-modal-header">
+          <div class="committee-modal-title-group">
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <span style="background: rgba(255,255,255,0.2); padding: 0.35rem 0.65rem; border-radius: var(--radius-sm); font-size: 1.15rem;">👥</span>
+              <h3 style="margin: 0; font-size: 1.4rem; color: #ffffff;">Comité Periodístico Escolar</h3>
+              <span class="badge-counter" id="committee-members-counter" style="background: #ffffff; color: var(--sky-900); font-weight: 800;">0 miembros</span>
+            </div>
+            <p style="margin: 0.35rem 0 0 0; color: rgba(255,255,255,0.9); font-size: 0.88rem;">
+              Directorio oficial en tiempo real de directores, redactores, editores audiovisuales y reporteros escolares admitidos de Innova Schools - Sede Canta Callao (2026).
+            </p>
+          </div>
+          <button id="btn-close-committee-modal" class="committee-modal-close" aria-label="Cerrar directorio">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Barra de filtro / búsqueda rápida dentro del directorio -->
+        <div class="committee-modal-filter-bar">
+          <div class="committee-search-input-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="committee-search-input" placeholder="Buscar compañero por nombre, cargo o grado escolar..." />
+          </div>
+        </div>
+
+        <div class="committee-modal-body">
+          <div class="committee-directory-grid" id="committee-directory-grid">
+            <!-- Se llena dinámicamente con usuarios admitidos -->
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- SCRIPT PRINCIPAL JAVASCRIPT -->
-    <script type="module" src="/app.js"></script>
+    <!-- SCRIPT PRINCIPAL JAVASCRIPT (COMPILACIÓN VITE / GITHUB PAGES) -->
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

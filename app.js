@@ -313,6 +313,12 @@ class CloudSyncService {
               if (typeof window.innovaApp.refreshPublicProfileIfOpen === "function") {
                 window.innovaApp.refreshPublicProfileIfOpen();
               }
+              if (typeof window.innovaApp.renderCommitteeDirectory === "function") {
+                window.innovaApp.renderCommitteeDirectory();
+              }
+              if (typeof window.innovaApp.renderCoauthorsSelector === "function") {
+                window.innovaApp.renderCoauthorsSelector();
+              }
             }
           } else {
             const localUsers = store.getUsers();
@@ -901,6 +907,15 @@ class InnovaNewsApp {
     this.previewAboutAudiovisual = document.getElementById("preview-about-audiovisual");
     this.previewAboutEquipo = document.getElementById("preview-about-equipo");
 
+    // Directorio del Comité Periodístico ("Ver Comité") y Selector de Coautores
+    this.btnOpenCommittee = document.getElementById("btn-open-committee");
+    this.committeeModal = document.getElementById("committee-modal");
+    this.btnCloseCommitteeModal = document.getElementById("btn-close-committee-modal");
+    this.committeeDirectoryGrid = document.getElementById("committee-directory-grid");
+    this.committeeMembersCounter = document.getElementById("committee-members-counter");
+    this.committeeSearchInput = document.getElementById("committee-search-input");
+    this.pubCoauthorsContainer = document.getElementById("pub-coauthors-container");
+
     // Contenedor Toast
     this.toastContainer = document.getElementById("toast-container");
   }
@@ -1053,6 +1068,19 @@ class InnovaNewsApp {
       });
     }
 
+    // Directorio del Comité Periodístico ("Ver Comité")
+    if (this.btnOpenCommittee) {
+      this.btnOpenCommittee.addEventListener("click", () => this.openCommitteeModal());
+    }
+    if (this.btnCloseCommitteeModal) {
+      this.btnCloseCommitteeModal.addEventListener("click", () => this.closeCommitteeModal());
+    }
+    if (this.committeeSearchInput) {
+      this.committeeSearchInput.addEventListener("input", (e) => {
+        this.renderCommitteeDirectory(e.target.value);
+      });
+    }
+
     // Cerrar modales con tecla ESC
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
@@ -1061,7 +1089,7 @@ class InnovaNewsApp {
     });
 
     // Cerrar al hacer clic en el backdrop
-    [this.wordModal, this.mediaModal, this.pdfModal, this.publicProfileModal, this.authModal, this.dashboardModal].forEach(modal => {
+    [this.wordModal, this.mediaModal, this.pdfModal, this.publicProfileModal, this.committeeModal, this.authModal, this.dashboardModal].forEach(modal => {
       if (modal) {
         modal.addEventListener("click", (e) => {
           if (e.target === modal) {
@@ -1597,6 +1625,18 @@ class InnovaNewsApp {
       const authorEmail = art.authorEmail || '';
       const authorId = art.authorId || '';
 
+      const coauthorsHtml = (art.coauthors && Array.isArray(art.coauthors) && art.coauthors.length > 0)
+        ? `<div class="coauthors-row">
+            <span style="font-size: 0.78rem;">Colaboradores:</span>
+            ${art.coauthors.map(c => `
+              <span class="coauthor-badge-link" onclick="window.innovaApp.openPublicProfile('${c.email || ''}', '${(c.name || '').replace(/'/g, "\\'")}', '${c.id || ''}')" title="Ver perfil público de ${c.name}">
+                <img src="${c.avatar || DEFAULT_USER_AVATAR}" style="width:16px;height:16px;border-radius:50%;object-fit:cover;">
+                ${c.name}
+              </span>
+            `).join("")}
+          </div>`
+        : "";
+
       return `
         <article class="article-card">
           <div class="article-card-cover">
@@ -1622,6 +1662,7 @@ class InnovaNewsApp {
               </span>
               <span>📅 ${art.date}</span>
             </div>
+            ${coauthorsHtml}
             <h3 class="article-card-title">${art.title}</h3>
             <p class="article-card-excerpt">${art.excerpt}</p>
             <div class="article-card-footer" style="flex-wrap: wrap; gap: 0.5rem;">
@@ -1740,6 +1781,19 @@ class InnovaNewsApp {
                 </div>
                 <div><span class="credit-role">Cámara y Edición:</span> ${credits.camera || 'Comité Audiovisual'}</div>
                 <div><span class="credit-role">Colaboradores:</span> ${credits.collaborators || 'Alumnos de Sede Canta Callao'}</div>
+                ${(item.coauthors && Array.isArray(item.coauthors) && item.coauthors.length > 0) ? `
+                  <div style="margin-top: 0.25rem;">
+                    <span class="credit-role">Coautores Oficiales:</span>
+                    <div style="display: inline-flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.2rem;">
+                      ${item.coauthors.map(c => `
+                        <span class="coauthor-badge-link" onclick="window.innovaApp.openPublicProfile('${c.email || ''}', '${(c.name || '').replace(/'/g, "\\'")}', '${c.id || ''}')" title="Ver perfil de ${c.name}">
+                          <img src="${c.avatar || DEFAULT_USER_AVATAR}" style="width:16px;height:16px;border-radius:50%;object-fit:cover;">
+                          ${c.name}
+                        </span>
+                      `).join("")}
+                    </div>
+                  </div>
+                ` : ""}
               </div>
             </div>
 
@@ -2303,6 +2357,15 @@ class InnovaNewsApp {
       if (user.email && item.authorEmail && item.authorEmail.toLowerCase() === user.email.toLowerCase()) return true;
       if (user.name && item.author && item.author.toLowerCase().includes(user.name.toLowerCase())) return true;
       if (user.name && item.credits && item.credits.director && item.credits.director.toLowerCase().includes(user.name.toLowerCase())) return true;
+      if (item.coauthors && Array.isArray(item.coauthors)) {
+        if (item.coauthors.some(c => 
+          (user.id && c.id && c.id === user.id) ||
+          (user.email && c.email && user.email && c.email.toLowerCase() === user.email.toLowerCase()) ||
+          (user.name && c.name && user.name && c.name.toLowerCase() === user.name.toLowerCase())
+        )) {
+          return true;
+        }
+      }
       return false;
     };
 
@@ -2458,6 +2521,7 @@ class InnovaNewsApp {
     if (pubAuthors && !pubAuthors.value) {
       pubAuthors.value = `${user.name} (${user.role})`;
     }
+    this.renderCoauthorsSelector();
   }
 
   closeDashboardModal() {
@@ -2481,7 +2545,9 @@ class InnovaNewsApp {
     if (this.viewProfile) this.viewProfile.style.display = tab === "profile" ? "block" : "none";
     if (this.viewSuperadmin) this.viewSuperadmin.style.display = tab === "superadmin" ? "block" : "none";
 
-    if (tab === "profile") {
+    if (tab === "publish") {
+      this.renderCoauthorsSelector();
+    } else if (tab === "profile") {
       this.loadUserProfile();
     } else if (tab === "superadmin") {
       this.loadSuperAdminData();
@@ -2507,6 +2573,7 @@ class InnovaNewsApp {
     const coverUrl = document.getElementById("pub-cover-url").value.trim();
     const wordUrl = this.pubWordUrl ? this.pubWordUrl.value.trim() : "";
     const pdfUrl = this.pubPdfUrl ? this.pubPdfUrl.value.trim() : "";
+    const coauthors = this.getSelectedCoauthors();
 
     if (category === "redaccion") {
       const content = document.getElementById("pub-content").value.trim();
@@ -2522,6 +2589,7 @@ class InnovaNewsApp {
         author: authors,
         authorEmail: user.email,
         authorId: user.id || user.email,
+        coauthors: coauthors.length > 0 ? coauthors : undefined,
         date,
         excerpt,
         coverUrl: coverUrl || "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80",
@@ -2554,6 +2622,7 @@ class InnovaNewsApp {
         author: authors,
         authorEmail: user.email,
         authorId: user.id || user.email,
+        coauthors: coauthors.length > 0 ? coauthors : undefined,
         date,
         description: excerpt,
         credits: {
@@ -3025,11 +3094,190 @@ class InnovaNewsApp {
     if (authBody) authBody.scrollTop = 0;
   }
 
+  // ========================================================================
+  // SISTEMA DE DIRECTORIO DEL COMITÉ Y ETIQUETADO DE COAUTORES
+  // ========================================================================
+
+  openCommitteeModal() {
+    if (!this.committeeModal) {
+      this.committeeModal = document.getElementById("committee-modal");
+    }
+    if (this.committeeModal) {
+      this.committeeModal.classList.add("active");
+      this.renderCommitteeDirectory();
+      if (this.committeeSearchInput) {
+        this.committeeSearchInput.value = "";
+        setTimeout(() => this.committeeSearchInput.focus(), 100);
+      }
+    }
+  }
+
+  closeCommitteeModal() {
+    if (this.committeeModal) {
+      this.committeeModal.classList.remove("active");
+    }
+  }
+
+  renderCommitteeDirectory(filterText = "") {
+    if (!this.committeeDirectoryGrid) {
+      this.committeeDirectoryGrid = document.getElementById("committee-directory-grid");
+    }
+    if (!this.committeeMembersCounter) {
+      this.committeeMembersCounter = document.getElementById("committee-members-counter");
+    }
+    if (!this.committeeDirectoryGrid) return;
+
+    const allUsers = store.getUsers();
+    // Filtrar únicamente a los usuarios registrados con estado ADMITIDO
+    let admitted = allUsers.filter(u => this.isUserAdmitted(u));
+
+    const term = (filterText || "").trim().toLowerCase();
+    if (term) {
+      admitted = admitted.filter(u => 
+        (u.name && u.name.toLowerCase().includes(term)) ||
+        (u.role && u.role.toLowerCase().includes(term)) ||
+        (u.grade && u.grade.toLowerCase().includes(term)) ||
+        (u.bio && u.bio.toLowerCase().includes(term))
+      );
+    }
+
+    if (this.committeeMembersCounter) {
+      this.committeeMembersCounter.textContent = `${admitted.length} ${admitted.length === 1 ? 'miembro oficial' : 'miembros oficiales'}`;
+    }
+
+    if (admitted.length === 0) {
+      this.committeeDirectoryGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔍</div>
+          <strong style="color: var(--text-dark); display: block; margin-bottom: 0.25rem;">No se encontraron miembros</strong>
+          <p style="font-size: 0.85rem; margin: 0;">No hay integrantes que coincidan con la búsqueda "${filterText}".</p>
+        </div>
+      `;
+      return;
+    }
+
+    this.committeeDirectoryGrid.innerHTML = admitted.map(user => {
+      const isSuperAdmin = this.isAdminUser(user);
+      const safeName = (user.name || "Miembro del Comité").replace(/'/g, "\\'");
+      const safeEmail = (user.email || "").replace(/'/g, "\\'");
+      const safeId = (user.id || "").replace(/'/g, "\\'");
+      const bannerUrl = user.banner || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80";
+      const avatarUrl = user.avatar || DEFAULT_USER_AVATAR;
+
+      return `
+        <div class="committee-member-card">
+          <div class="committee-card-banner" style="background-image: url('${bannerUrl}');"></div>
+          <div class="committee-card-avatar-wrap">
+            <img src="${avatarUrl}" alt="${user.name}" class="committee-card-avatar">
+            ${isSuperAdmin 
+              ? '<span class="status-badge" style="background: #fef3c7; color: #b45309; font-weight: 800; font-size: 0.72rem;">👑 Dirección</span>'
+              : '<span class="status-badge status-admitted" style="font-size: 0.72rem;">✓ ADMITIDO</span>'
+            }
+          </div>
+          <div class="committee-card-content">
+            <h4 class="committee-card-name">${user.name}</h4>
+            <div class="committee-card-role">${user.role || 'Miembro Oficial'}</div>
+            <div class="committee-card-grade">🏫 ${user.grade || 'Innova Schools Canta Callao'}</div>
+            <p class="committee-card-bio">
+              ${user.bio && user.bio.trim() ? user.bio.trim() : 'Miembro activo del Comité Periodístico Innova News en la Sede Canta Callao.'}
+            </p>
+            <div class="committee-card-actions">
+              <button class="btn-primary" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 0.45rem 0.85rem;" onclick="window.innovaApp.closeCommitteeModal(); window.innovaApp.openPublicProfile('${safeEmail}', '${safeName}', '${safeId}')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Ver Perfil
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  renderCoauthorsSelector() {
+    if (!this.pubCoauthorsContainer) {
+      this.pubCoauthorsContainer = document.getElementById("pub-coauthors-container");
+    }
+    if (!this.pubCoauthorsContainer) return;
+
+    const allUsers = store.getUsers();
+    const currentUser = store.getCurrentUser();
+    // Filtrar únicamente a los usuarios con estado ADMITIDO en tiempo real
+    const admittedUsers = allUsers.filter(u => this.isUserAdmitted(u));
+
+    if (admittedUsers.length === 0) {
+      this.pubCoauthorsContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.75rem;">
+          No hay otros miembros admitidos disponibles para etiquetar.
+        </div>
+      `;
+      return;
+    }
+
+    const availableUsers = admittedUsers.filter(user => {
+      if (!currentUser) return true;
+      const isSelf = (currentUser.id && user.id && currentUser.id === user.id) ||
+                     (currentUser.email && user.email && currentUser.email.toLowerCase() === user.email.toLowerCase());
+      return !isSelf;
+    });
+
+    if (availableUsers.length === 0) {
+      this.pubCoauthorsContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.75rem;">
+          Eres el único autor admitido activo actualmente en la plataforma.
+        </div>
+      `;
+      return;
+    }
+
+    this.pubCoauthorsContainer.innerHTML = availableUsers.map(user => {
+      const safeName = (user.name || "Usuario").replace(/"/g, '&quot;');
+      const safeRole = (user.role || "Comité").replace(/"/g, '&quot;');
+      const avatarUrl = user.avatar || DEFAULT_USER_AVATAR;
+
+      return `
+        <label class="coauthor-checkbox-item" id="coauthor-item-${user.id}">
+          <input type="checkbox" name="selected_coauthor" value="${user.id}" data-name="${safeName}" data-email="${user.email || ''}" data-avatar="${avatarUrl}" data-role="${safeRole}">
+          <img src="${avatarUrl}" alt="${safeName}" class="coauthor-mini-avatar">
+          <div class="coauthor-info">
+            <span class="coauthor-name">${user.name}</span>
+            <span class="coauthor-role">${user.role}</span>
+          </div>
+        </label>
+      `;
+    }).join("");
+
+    this.pubCoauthorsContainer.querySelectorAll(".coauthor-checkbox-item").forEach(item => {
+      const checkbox = item.querySelector("input[type='checkbox']");
+      if (checkbox) {
+        checkbox.addEventListener("change", () => {
+          item.classList.toggle("selected", checkbox.checked);
+        });
+      }
+    });
+  }
+
+  getSelectedCoauthors() {
+    if (!this.pubCoauthorsContainer) return [];
+    const checkboxes = this.pubCoauthorsContainer.querySelectorAll("input[name='selected_coauthor']:checked");
+    const selected = [];
+    checkboxes.forEach(cb => {
+      selected.push({
+        id: cb.value,
+        name: cb.dataset.name,
+        email: cb.dataset.email,
+        avatar: cb.dataset.avatar,
+        role: cb.dataset.role
+      });
+    });
+    return selected;
+  }
+
   closeAllModals() {
     this.closeWordModal();
     this.closeMediaModal();
     this.closePdfViewer();
     this.closePublicProfile();
+    this.closeCommitteeModal();
     this.closeAuthModal();
     this.closeDashboardModal();
   }
@@ -3066,7 +3314,16 @@ class InnovaNewsApp {
   }
 }
 
-// Inicializar la aplicación al cargar el DOM
-document.addEventListener("DOMContentLoaded", () => {
-  window.innovaApp = new InnovaNewsApp();
-});
+// Inicializar la aplicación de manera inmediata y robusta
+function startInnovaApp() {
+  if (!window.innovaApp) {
+    window.innovaApp = new InnovaNewsApp();
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startInnovaApp);
+} else {
+  startInnovaApp();
+}
+
